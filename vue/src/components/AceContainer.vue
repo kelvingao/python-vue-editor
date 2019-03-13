@@ -1,83 +1,86 @@
 <template>
   <div class="ace-container">
     <div id="content">
-      <!-- ************  CODING ZONE  ************ -->
+      <!-- CODING ZONE -->
       <div id="code">
-          <form method="post" >
-              <div id="title-code" class="head-section">
-                Source Code
-              </div>
+        <div id="title-code" class="head-section">
+          Source Code
+        </div>
 
-              <input id="launch-button" class="head-section" type="submit" value="Launch" />
+        <!-- <input id="launch-button" class="head-section" type="submit" value="Launch" /> -->
+        <button id="launch-button" class="head-section" v-on:click='launch'>Launch</button>
 
-              <!-- <textarea id="text-code" name="code" rows=18 cols=70>
-                {{ code }}
-              </textarea><br/> -->
-
-              <div id="text-code-ace" ref="ace">{{ code }}</div>
-          </form>
+        <div id="text-code">
+          <editor v-model="code" @init="editorInit" lang="python" theme="chrome" ref="ace"></editor>
+        </div>
       </div>
-      
-      <!-- ************ RUNNING ZONE RESULTS ************ -->
-      
+
+      <!-- RUNNING ZONE RESULTS -->
       <div id="result">
           <div id="title-result" class="head-section">
               Output result
           </div>
-          <textarea id="text-result" rows="18" cols="70" readonly></textarea>
+          <textarea v-model="output" id="text-result" rows="18" cols="70" readonly></textarea>
       </div>
-      
-      <!-- ************ COMPILATION RESULTS ZONE ************ -->
-      
+
+      <!-- COMPILATION RESULTS ZONE  -->
       <div id="compile">
           <div id="title-compile" class="head-section">
               Compilation / Output
           </div>
-          <textarea id="text-compile" rows="7" cols="140" readonly></textarea>
+          <textarea v-model="compil" id="text-compile" rows="7" cols="140" readonly></textarea>
       </div>
     </div>
   </div>
 </template>
 
 <script>
-  import ace from 'ace-builds'
-  import 'ace-builds/webpack-resolver' // 在 webpack 环境中使用必须要导入
+import axios from 'axios'
+export default {
+  name:'AceContainer',
 
- 
-  export default {
-    name:'AceContainer',
+  components: {
+        editor: require('vue2-ace-editor'),
+  },
 
-    data () {
-      return {
-        code: 'import sys\n\
-import os\n\n\
-if __name__ == "__main__":\n\
-    print "Hello Python World!!',
-        ace: null,
-        themePath: 'ace/theme/tomorrow', // 不导入 webpack-resolver，该模块路径会报错
-        modePath: 'ace/mode/python' // 同上
+  data() {
+    return {
+      code:'',
+      output:'',
+      compil:''
+    }
+  },
+  
+  methods: {
+      editorInit: function () {
+          require('brace/ext/language_tools')
+          require('brace/mode/python')                
+          require('brace/theme/chrome')
+      },
+      launch(event) {
+        axios.post('http://localhost:5000/runpy', this.code, {
+          headers: { 'Content-Type': 'text/plain' }
+        })
+          .then(response => {
+            this.output = response.data.output
+            this.compil = response.data.compil
+          })
       }
-    },
+  },
 
-    mounted () {
-      this.ace = ace.edit("text-code-ace", {
-        maxLines: 20, // 最大行数，超过会自动出现滚动条
-        minLines: 16, // 最小行数，还未到最大行数时，编辑器会自动伸缩大小
-        fontSize: 14, // 编辑器内字体大小
-        theme: this.themePath, // 默认设置的主题
-        mode: this.modePath, // 默认设置的语言模式
-        tabSize: 4 // 制表符设置为 4 个空格大小
-      })
-    },
-    
-    
+  mounted() {
+        axios.get('http://localhost:5000/')
+          .then(response => {
+            this.code = response.data.code
+            this.output = response.data.output
+            this.compil = response.data.compil
+          })      
   }
-</script>
-<style>
-li {
-    display: inline;
-}
 
+}
+</script>
+
+<style>
 #content {
     position: absolute;
     top: 50px;
@@ -171,8 +174,4 @@ li {
     height: 80%;
 }
 
-.hidden {
-    display: none;
-}
 </style>
-

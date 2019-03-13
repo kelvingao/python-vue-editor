@@ -2,6 +2,8 @@
 
 # aiohttp imports
 from aiohttp import web
+import os
+from runcode import runcode
 
 default_py_code = """import sys
 import os
@@ -10,20 +12,19 @@ if __name__ == "__main__":
     print "Hello Python World!!"
 """
 
+
 class RunPyCode:
 
-    def __init__(self, code=None):
+    def __init__(self, code=default_py_code):
 
         self.code = code
         if not os.path.exists('running'):
             os.mkdir('running')
-    
-    async def get_history_bars(self, request: web.Request) -> web.json_response:
 
-
-    def runpy(code = default_py_code):
+    def runpy(self, request: web.Request):
         resrun = 'No result!'
         rescompil = "No compilation for Python"
+        return self.code
     
 
     # def _run_py_prog(self, cmd="a.py"):
